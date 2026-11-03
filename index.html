@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maverick Expeditions — 3D Website</title>
+<meta name="description" content="Maverick Expeditions — travel agency in Tiruppur for South India tours. Student, family, corporate, honeymoon, pilgrimage and custom tours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ink:#0B1311; --ink-2:#14201C; --paper:#F2F4F1; --muted:#3E4B46; --muted-d:#B9C5C0;
+  --accent:#F5B83D; --line:rgba(255,255,255,.14);
+  --display:'Bricolage Grotesque',system-ui,sans-serif; --body:'Manrope',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+/* Lenis */
+html.lenis,html.lenis body{height:auto}.lenis:not(.lenis-autoToggle).lenis-stopped{overflow:clip}.lenis.lenis-smooth [data-lenis-prevent]{overscroll-behavior:contain}.lenis.lenis-smooth iframe{pointer-events:none}.lenis.lenis-autoToggle{transition-property:overflow;transition-duration:1ms;transition-behavior:allow-discrete}
+
+section[id]{scroll-margin-top:84px}
+html{overflow-x:clip}
+body{margin:0;background:var(--ink);color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:clip}
+img{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.03em}
+p{margin:0}
+.wrap{max-width:1360px;margin:0 auto;padding:0 40px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:50px;padding:0 24px;border-radius:999px;font:700 15px var(--body);text-decoration:none;border:0;cursor:pointer;transition:transform .25s ease, box-shadow .25s ease}
+.btn:hover{transform:translateY(-2px)}
+.btn-accent{background:var(--accent);color:var(--ink);box-shadow:0 10px 30px rgba(245,184,61,.35)}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-ghost{border:1.5px solid currentColor;background:transparent}
+.btn svg{width:18px;height:18px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+
+/* ---------- Loader ---------- */
+#loader{position:fixed;inset:0;z-index:100;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .8s ease, visibility .8s}
+#loader img{width:150px;opacity:.95}
+#loader .bar{width:180px;height:2px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+#loader .bar i{display:block;height:100%;width:30%;background:var(--accent);animation:load 1.1s ease-in-out infinite}
+@keyframes load{0%{transform:translateX(-100%)}100%{transform:translateX(330%)}}
+#loader.done{opacity:0;visibility:hidden}
+
+/* ---------- Nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .4s, backdrop-filter .4s, border-color .4s;border-bottom:1px solid transparent}
+.nav.solid{background:rgba(11,19,17,.72);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);border-color:var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-top:16px;padding-bottom:16px;flex-wrap:wrap}
+.nav .logo img{height:52px;width:auto}
+.nav .links{display:flex;gap:2px;padding:5px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.nav .links a{color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 16px;border-radius:999px;transition:background .2s}
+.nav .links a:hover{background:rgba(255,255,255,.12)}
+.nav .right{display:flex;align-items:center;gap:14px}
+.nav .phone{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+@media (max-width:980px){.nav .links,.nav .phone{display:none}}
+
+/* ---------- 3D Fly-through hero ---------- */
+#fly{position:relative;height:420vh;background:#0B1311}
+#stage{position:sticky;top:0;height:100vh;overflow:hidden}
+.scenes{position:absolute;inset:0;perspective:1200px;perspective-origin:50% 45%;overflow:hidden;background:#0B1311}
+.scene{position:absolute;inset:-5%;transform-style:preserve-3d;will-change:transform,opacity,filter;opacity:0}
+.scene img{width:100%;height:100%;object-fit:cover;will-change:transform}
+.scene[data-i="0"]{opacity:1}
+.cloud{position:absolute;inset:-20%;width:140%;height:140%;pointer-events:none;opacity:0;will-change:transform,opacity;filter:blur(6px)}
+#stage .vignette{position:absolute;inset:0;z-index:30;pointer-events:none;background:
+  linear-gradient(90deg, rgba(5,10,8,.5) 0%, rgba(5,10,8,.18) 45%, rgba(5,10,8,0) 65%),
+  radial-gradient(120% 90% at 50% 40%, rgba(0,0,0,0) 55%, rgba(5,10,8,.55) 100%),
+  linear-gradient(180deg, rgba(5,10,8,.45) 0%, rgba(5,10,8,0) 22%, rgba(5,10,8,0) 70%, rgba(5,10,8,.65) 100%)}
+.chapter{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;justify-content:flex-end;padding:0 0 9vh;color:#fff;pointer-events:none;opacity:0;will-change:opacity,transform}
+.chapter .wrap{width:100%}
+.chapter.c2{justify-content:center}
+.chapter .pill{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:rgba(11,19,17,.45);border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);margin-bottom:26px}
+.chapter .pill svg{width:16px;height:16px}
+.chapter h1{font-weight:800;font-size:clamp(60px,10.5vw,176px);line-height:.86;letter-spacing:-.045em;text-shadow:0 10px 60px rgba(0,0,0,.35)}
+.chapter .eyebrow{text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.chapter .lede{margin-top:26px;max-width:600px;font-size:19px;line-height:1.55;color:#E6ECE9;text-shadow:0 2px 20px rgba(0,0,0,.5)}
+.chapter h2{font-weight:800;font-size:clamp(44px,7vw,112px);line-height:.92;letter-spacing:-.04em;text-shadow:0 4px 40px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.25)}
+.chapter h2 em{font-style:normal;color:var(--accent)}
+.chapter.c3 .wrap{display:flex;flex-direction:column;gap:28px}
+.chapter .live{pointer-events:auto}
+.scrollcue{position:absolute;z-index:40;left:50%;bottom:22px;transform:translateX(-50%);color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+.scrollcue span{width:22px;height:36px;border:1.5px solid rgba(255,255,255,.7);border-radius:12px;position:relative}
+.scrollcue span::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;margin-left:-1.5px;border-radius:2px;background:#fff;animation:cue 1.6s ease-in-out infinite}
+@keyframes cue{0%{opacity:0;transform:translateY(0)}40%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
+.progress{position:absolute;z-index:40;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px}
+.progress i{width:3px;height:34px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden;position:relative}
+.progress i b{position:absolute;inset:0;background:var(--accent);transform-origin:top;transform:scaleY(0)}
+.alt{position:absolute;z-index:40;left:40px;top:96px;color:rgba(255,255,255,.8);font:600 12px var(--body);letter-spacing:.18em;text-transform:uppercase;display:flex;gap:18px}
+.alt b{color:#fff;font-weight:700}
+@media (max-width:700px){.alt,.progress{display:none}}
+
+/* Trip finder (glass) */
+.finder{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4);border-radius:28px;padding:18px;display:flex;flex-direction:column;gap:14px;max-width:1100px;box-shadow:0 40px 100px rgba(0,0,0,.35)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:42px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;font:700 14px var(--body);cursor:pointer;transition:all .2s}
+.chip[aria-pressed="true"]{background:#fff;color:var(--ink);border-color:#fff}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;align-items:end}
+.field{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#E6ECE9}
+.field select,.field input{height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:rgba(11,19,17,.45);color:#fff;padding:0 14px;font:600 16px var(--body);text-transform:none;letter-spacing:0}
+.field select option{color:#0B1311}
+
+/* ---------- Light sections ---------- */
+.light{background:var(--paper);color:var(--ink)}
+.proof{background:var(--ink);color:#fff;border-top:1px solid var(--line)}
+.proof .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;padding-top:30px;padding-bottom:30px}
+.proof div{display:flex;align-items:center;gap:14px}
+.proof strong{font:800 42px var(--display);color:var(--accent);letter-spacing:-.03em}
+.proof span{font-size:15px;line-height:1.4;color:var(--muted-d)}
+
+.sec{padding:120px 0}
+.sec-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:48px}
+.sec-head .t{display:flex;flex-direction:column;gap:14px;max-width:780px}
+.sec-head h2{font-weight:800;font-size:clamp(40px,5.4vw,78px);line-height:.96}
+.sec-head .eyebrow{color:var(--muted)}
+
+/* 3D tilt destination cards */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:22px;perspective:1200px}
+.tilt{display:block;height:440px;text-decoration:none;color:#fff;perspective:900px}
+.tilt .card{position:relative;width:100%;height:100%;border-radius:26px;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s;box-shadow:0 20px 40px rgba(11,19,17,.18);background:#0B1311}
+.tilt:hover .card{box-shadow:0 40px 80px rgba(11,19,17,.35)}
+.tilt .ph{position:absolute;inset:0;border-radius:26px;overflow:hidden;transform:translateZ(0)}
+.tilt .ph img{width:100%;height:100%;object-fit:cover;transform:scale(1.12);transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.tilt .ph::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,12,0) 40%,rgba(8,14,12,.9) 100%)}
+.tilt .glare{position:absolute;inset:0;border-radius:26px;pointer-events:none;opacity:0;transition:opacity .3s;mix-blend-mode:soft-light}
+.tilt:hover .glare{opacity:1}
+.tilt .tag{position:absolute;top:18px;left:18px;transform:translateZ(50px);font-size:13px;font-weight:700;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,.94);color:var(--ink)}
+.tilt .meta{position:absolute;left:22px;right:22px;bottom:22px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;transform:translateZ(70px)}
+.tilt .meta h3{font-size:38px;font-weight:800;line-height:1}
+.tilt .meta p{font-size:15px;color:#DCE3E0;margin-top:6px}
+.tilt .go{width:48px;height:48px;flex:none;border-radius:999px;background:var(--accent);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.tilt .go svg{width:18px;height:18px}
+.tilt.cta .card{background:var(--accent);color:var(--ink);padding:30px;display:flex;flex-direction:column;justify-content:space-between}
+.tilt.cta .inner{transform:translateZ(60px);display:flex;flex-direction:column;gap:12px}
+.tilt.cta h3{font-size:36px;font-weight:800;line-height:1}
+.tilt.cta p{font-size:16px;line-height:1.5}
+.tilt.cta .compass{width:56px;height:56px;transform:translateZ(80px)}
+
+/* ---------- 3D ring carousel ---------- */
+.dark{background:var(--ink);color:#fff}
+.dark .sec-head .eyebrow{color:var(--accent)}
+.ringstage{position:relative;height:620px;perspective:1600px;perspective-origin:50% 35%;cursor:grab;touch-action:pan-y;user-select:none}
+.ringstage:active{cursor:grabbing}
+.ring{position:absolute;left:50%;top:40px;width:300px;height:420px;margin-left:-150px;transform-style:preserve-3d}
+.slot{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:26px;overflow:hidden;background:#14201C;box-shadow:0 30px 70px rgba(0,0,0,.5);transition:opacity .3s, filter .3s}
+.slot img{width:100%;height:100%;object-fit:cover}
+.slot::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,14,12,.1) 30%,rgba(8,14,12,.92) 100%)}
+.slot .lbl{position:absolute;left:22px;right:22px;bottom:22px;z-index:1;display:flex;flex-direction:column;gap:8px}
+.slot .lbl small{font:700 13px var(--display);color:var(--accent);letter-spacing:.1em}
+.slot .lbl b{font:800 32px/1 var(--display);letter-spacing:-.02em}
+.floor{position:absolute;left:50%;top:470px;width:1100px;height:1100px;margin-left:-550px;border-radius:50%;background:radial-gradient(closest-side, rgba(245,184,61,.16), rgba(245,184,61,0) 70%);transform:rotateX(90deg) translateZ(-10px);pointer-events:none}
+.ringbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px;margin-top:-20px}
+.ringinfo{max-width:620px;min-height:90px}
+.ringinfo h3{font-size:34px;font-weight:800}
+.ringinfo p{margin-top:10px;font-size:17px;line-height:1.55;color:var(--muted-d)}
+.ringctl{display:flex;gap:10px}
+.roundbtn{width:56px;height:56px;border-radius:999px;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.roundbtn:hover{background:rgba(255,255,255,.1)}
+.roundbtn svg{width:20px;height:20px}
+@media (max-width:700px){.ringstage{height:520px}.ring{width:230px;height:340px;margin-left:-115px}.floor{top:380px}}
+
+/* ---------- Why: floating 3D photo stack ---------- */
+.why{display:flex;flex-wrap:wrap;gap:72px;align-items:center}
+.stackwrap{flex:1 1 480px;height:640px;perspective:1400px;position:relative}
+.stack{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .2s linear}
+.stack figure{position:absolute;margin:0;border-radius:24px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.45)}
+.stack figure img{width:100%;height:100%;object-fit:cover}
+.stack .f1{left:4%;top:6%;width:56%;height:62%;transform:translateZ(-80px)}
+.stack .f2{right:2%;top:22%;width:46%;height:50%;transform:translateZ(60px)}
+.stack .f3{left:22%;bottom:2%;width:40%;height:34%;transform:translateZ(150px)}
+.stack .badge{position:absolute;right:6%;bottom:8%;transform:translateZ(220px);background:var(--accent);color:var(--ink);border-radius:20px;padding:18px 22px;box-shadow:0 30px 60px rgba(0,0,0,.4)}
+.stack .badge b{display:block;font:800 44px/1 var(--display)}
+.stack .badge span{font-size:14px;font-weight:700}
+.reasons{flex:1 1 460px;list-style:none;margin:0;padding:0}
+.reasons li{display:flex;gap:24px;padding:26px 0;border-top:1px solid var(--line)}
+.reasons li:last-child{border-bottom:1px solid var(--line)}
+.reasons .n{font:700 17px var(--display);color:var(--accent);min-width:32px}
+.reasons h3{font-size:28px;font-weight:700}
+.reasons p{margin-top:8px;font-size:16px;line-height:1.6;color:var(--muted-d)}
+.quote{font:700 clamp(28px,3.2vw,46px)/1.12 var(--display);letter-spacing:-.025em;margin-bottom:40px}
+
+/* ---------- How ---------- */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;perspective:1200px}
+.step{background:#fff;border-radius:26px;padding:34px;display:flex;flex-direction:column;gap:16px;transition:transform .5s cubic-bezier(.2,.7,.2,1), box-shadow .5s;box-shadow:0 1px 0 rgba(11,19,17,.06)}
+.step:hover{transform:translateY(-10px) rotateX(6deg);box-shadow:0 40px 60px rgba(11,19,17,.15)}
+.step .num{font:800 72px/1 var(--display);color:#C3CCC7;letter-spacing:-.04em}
+.step h3{font-size:28px;font-weight:700}
+.step p{font-size:16px;line-height:1.6;color:var(--muted)}
+.step.darkstep{background:var(--ink);color:#fff}
+.step.darkstep .num{color:var(--accent)}
+.step.darkstep p{color:var(--muted-d)}
+
+/* ---------- Plan ---------- */
+.plan{background:var(--accent);border-radius:40px;padding:60px;display:flex;flex-wrap:wrap;gap:48px;position:relative;overflow:hidden}
+.plan .l{flex:1 1 380px;display:flex;flex-direction:column;gap:22px;position:relative;z-index:1}
+.plan h2{font-weight:800;font-size:clamp(44px,5.6vw,84px);line-height:.92;letter-spacing:-.04em}
+.plan .contact{display:flex;flex-direction:column;gap:12px;font-size:17px;font-weight:600}
+.plan .contact a{text-decoration:none}
+.plan form{flex:1 1 520px;background:#fff;border-radius:26px;padding:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;position:relative;z-index:1;box-shadow:0 40px 80px rgba(11,19,17,.18)}
+.lf{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:700;color:#4A5752}
+.lf input,.lf select,.lf textarea{height:52px;border-radius:14px;border:1px solid #D5DBD8;background:#F6F8F7;padding:0 14px;font:500 16px var(--body);color:var(--ink)}
+.lf textarea{height:auto;padding:14px;resize:vertical}
+.full{grid-column:1/-1}
+.err{color:#A3341A;font-size:13px;font-weight:600;min-height:0}
+.lf input[aria-invalid="true"]{border-color:#A3341A;background:#FDF3F0}
+.wa-btn{display:inline-flex;align-items:center;gap:10px;margin-top:10px;min-height:50px;padding:0 22px;border-radius:999px;background:#1F8F4E;color:#fff !important;text-decoration:none;font-weight:700}
+.done{grid-column:1/-1;display:none;background:#EEF6EF;border-radius:14px;padding:16px;font-size:15px;line-height:1.5;color:#1E3B26}
+.done.show{display:block}
+.done a{font-weight:700}
+.plan .mtn{position:absolute;right:-60px;bottom:-40px;width:520px;opacity:.14;pointer-events:none}
+
+/* ---------- Footer ---------- */
+footer{background:var(--ink);color:#fff}
+footer .wrap{padding-top:90px;padding-bottom:40px;display:flex;flex-direction:column;gap:56px}
+.ftop{display:flex;flex-wrap:wrap;gap:48px;justify-content:space-between}
+.fbrand{flex:1 1 320px;max-width:420px;display:flex;flex-direction:column;gap:18px}
+.fbrand img{height:76px;width:auto;align-self:flex-start}
+.fbrand p{color:var(--muted-d);line-height:1.6}
+.news{display:flex;gap:8px;flex-wrap:wrap}
+.news input{flex:1 1 200px;height:52px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);padding:0 20px;font:500 16px var(--body);color:#fff}
+.fcols{display:flex;flex-wrap:wrap;gap:64px}
+.fcols nav{display:flex;flex-direction:column;gap:12px}
+.fcols nav span{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8FA09A}
+.fcols a{text-decoration:none;font-size:15px;color:#fff;opacity:.9}
+.fcols a:hover{opacity:1;text-decoration:underline}
+.big{font:800 clamp(56px,11.5vw,180px)/.84 var(--display);letter-spacing:-.05em;color:#1C2925;margin:0}
+.fbot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;padding-top:24px;border-top:1px solid var(--line);font-size:14px;color:#8FA09A}
+
+
+/* Islands & abroad grid */
+.igrid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.igrid .tilt{height:460px}
+.igrid .tilt .meta h3{font-size:30px}
+
+/* ---------- Policies & FAQ ---------- */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;padding:6px;border-radius:999px;background:#E2E8E5;align-self:flex-start;margin-bottom:40px}
+.tab{min-height:48px;padding:0 22px;border-radius:999px;border:0;background:transparent;font:700 15px var(--body);color:var(--ink);cursor:pointer;transition:background .2s,color .2s}
+.tab[aria-selected="true"]{background:var(--ink);color:#fff}
+.panel[hidden]{display:none}
+.faq{display:flex;flex-direction:column;gap:12px;max-width:980px}
+.faq details{background:#fff;border-radius:20px;padding:0 26px;box-shadow:0 1px 0 rgba(11,19,17,.06);transition:box-shadow .3s}
+.faq details[open]{box-shadow:0 20px 40px rgba(11,19,17,.08)}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px;font:700 20px/1.3 var(--display);letter-spacing:-.01em}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .pm{flex:none;width:38px;height:38px;border-radius:999px;background:#EEF2F0;display:flex;align-items:center;justify-content:center;transition:transform .3s,background .3s}
+.faq details[open] summary .pm{transform:rotate(45deg);background:var(--accent)}
+.faq .a{padding:0 0 24px;font-size:16px;line-height:1.65;color:var(--muted);max-width:820px}
+.faq .a ul{margin:8px 0 0;padding-left:20px}
+.terms{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px}
+.tcard{background:#fff;border-radius:26px;padding:32px;display:flex;flex-direction:column;gap:18px}
+.tcard h3{font-size:26px;font-weight:700}
+.tcard ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.55;color:var(--muted)}
+.tcard.wide{grid-column:1/-1}
+.payrow{display:grid;grid-template-columns:30fr 50fr 20fr;gap:6px}
+.payrow div{border-radius:16px;padding:18px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+.payrow b{font:800 40px/1 var(--display);letter-spacing:-.03em}
+.payrow span{font-size:14px;line-height:1.45;font-weight:600}
+.pay1{background:var(--accent);color:var(--ink)}
+.pay2{background:var(--ink);color:#fff}
+.pay3{background:#DCE4E0;color:var(--ink)}
+.tiers{display:flex;flex-direction:column;gap:10px}
+.tier{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;border-radius:16px;background:#F2F4F1}
+.tier span{font-size:16px;font-weight:600}
+.tier b{font:800 26px var(--display);letter-spacing:-.02em}
+.tier.t3{background:#FBE9E4}.tier.t3 b{color:#A3341A}
+.note{font-size:14px;color:var(--muted);line-height:1.5}
+.privacy{background:#fff;border-radius:26px;padding:44px;max-width:980px;display:flex;flex-direction:column;gap:26px}
+.privacy h3{font-size:22px;font-weight:700;margin-bottom:8px}
+.privacy p{font-size:16px;line-height:1.7;color:var(--muted)}
+@media (max-width:700px){.payrow{grid-template-columns:1fr}.payrow div{min-height:auto}.privacy{padding:26px}.tabs{border-radius:22px}}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(50px) rotateX(10deg);transform-origin:50% 100%;transition:opacity 1s cubic-bezier(.2,.7,.2,1), transform 1s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (max-width:700px){.wrap{padding:0 20px}.sec{padding:88px 0}.plan{padding:28px;border-radius:28px}.plan form{padding:22px}}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div id="loader" role="status" aria-live="polite">
+  <img src="img/logo.png" alt="Maverick Expeditions">
+  <div class="bar"><i></i></div>
+  <span class="sr">Loading</span>
+</div>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a href="#top" class="logo" aria-label="Maverick Expeditions home"><img src="img/logo.png" alt="Maverick Expeditions"></a>
+    <nav class="links" aria-label="Main">
+      <a href="#destinations">Destinations</a>
+      <a href="#tours">Tours</a>
+      <a href="#why">Why Maverick</a>
+      <a href="#how">How it works</a>
+      <a href="#plan">Contact</a>
+    </nav>
+    <div class="right">
+      <a class="phone" href="tel:+918110849375">+91 81108 49375</a>
+      <a class="btn btn-accent" href="#plan">Plan my trip
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</header>
+
+<main>
+<!-- ========== 3D FLY-THROUGH ========== -->
+<section id="fly" aria-label="Fly through the mountains">
+  <div id="stage">
+    <div class="scenes" id="scenes" aria-hidden="true">
+      <div class="scene" data-i="0"><img src="img/hero-munnar.webp" alt="" fetchpriority="high"></div>
+      <div class="scene" data-i="1"><img src="img/hero-backwaters.webp" alt=""></div>
+      <div class="scene" data-i="2"><img src="img/hero-solang.webp" alt=""></div>
+      <canvas class="cloud" id="cloudA"></canvas>
+      <canvas class="cloud" id="cloudB"></canvas>
+    </div>
+    <div class="vignette"></div>
+    <div class="alt" aria-hidden="true"><span id="locName">Munnar, Kerala</span><span>≈ <b id="altv">1,532</b> m</span></div>
+    <div class="progress" aria-hidden="true"><i><b id="p1"></b></i><i><b id="p2"></b></i><i><b id="p3"></b></i></div>
+
+    <div class="chapter c1" id="top">
+      <div class="wrap">
+        <p class="pill eyebrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Travel agency in Tiruppur · South India tours</p>
+        <h1>Forge your<br>own path.</h1>
+        <p class="lede">Trips planned to go further — to places that stay with you. For students, families, colleagues and newlyweds.</p>
+      </div>
+    </div>
+
+    <div class="chapter c2">
+      <div class="wrap">
+        <p class="pill eyebrow" style="color:var(--accent)">2 years · Tiruppur &amp; Coimbatore</p>
+        <h2>Hill stations.<br>Tea country.<br><em>Backwaters.</em> Forts.</h2>
+      </div>
+    </div>
+
+    <div class="chapter c3">
+      <div class="wrap">
+        <h2>Where are we<br>going <em>next?</em></h2>
+        <form class="finder live" id="finder" aria-label="Find your trip">
+          <div class="chips" role="group" aria-label="Trip type" id="chips"></div>
+          <div class="fields">
+            <label class="field">Where to?
+              <select id="fDest">
+                <option>Anywhere — suggest a place</option>
+                <optgroup label="India"><option>Ooty</option><option>Munnar</option><option>Alleppey</option><option>Mysore</option><option>Coorg</option><option>Kodaikanal</option><option>Goa</option><option>Jaipur</option><option>Kullu Manali</option><option>Andaman Islands</option></optgroup>
+                <optgroup label="International"><option>Sri Lanka</option><option>Malaysia</option><option>Thailand</option><option>Singapore</option></optgroup>
+              </select>
+            </label>
+            <label class="field">When?
+              <input type="month" id="fWhen">
+            </label>
+            <label class="field">Group size
+              <select id="fSize"><option>2 travellers</option><option>3–6 travellers</option><option>7–20 travellers</option><option>20–50 travellers</option><option>50+ (school / company)</option></select>
+            </label>
+            <button class="btn btn-accent" type="submit" style="height:52px;border-radius:14px">Get a free itinerary
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="scrollcue" id="cue" aria-hidden="true"><span></span>Scroll to explore</div>
+  </div>
+</section>
+
+<!-- ========== PROOF ========== -->
+<section class="proof" aria-label="Highlights">
+  <div class="wrap">
+    <div><strong>2</strong><span>years running groups<br>out of Tiruppur</span></div>
+    <div><strong>₹0</strong><span>hidden extras —<br>itemised quotes</span></div>
+    <div><strong>24×7</strong><span>one number that reaches<br>a real person</span></div>
+    <div><strong>1</strong><span>coordinator travelling<br>with every group</span></div>
+  </div>
+</section>
+
+<!-- ========== DESTINATIONS (3D tilt) ========== -->
+<section id="destinations" class="light sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="t"><p class="eyebrow">Destinations</p><h2>Hill stations, backwaters, forts and beaches.</h2></div>
+      <a class="btn btn-ghost" href="#plan">Ask about a destination</a>
+    </div>
+    <div class="dgrid" id="dgrid"></div>
+
+    <div class="sec-head reveal" style="margin-top:96px">
+      <div class="t"><p class="eyebrow">Islands &amp; abroad</p><h2>Beyond the mainland.</h2></div>
+      <p style="max-width:380px;color:var(--muted);line-height:1.6">Island hopping in the Andamans, or a short flight to Sri Lanka, Malaysia, Thailand and Singapore — planned with the same care.</p>
+    </div>
+    <div class="dgrid igrid" id="igrid"></div>
+  </div>
+</section>
+
+<!-- ========== TOURS (3D ring) ========== -->
+<section id="tours" class="dark sec">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="t"><p class="eyebrow">Tours for every group</p><h2>Who's travelling?<br>We've planned it before.</h2></div>
+      <p style="max-width:360px;color:var(--muted-d);line-height:1.6">Drag the ring, or use the arrows, to explore all eight ways to travel with us.</p>
+    </div>
+    <div class="ringstage" id="ringstage" aria-roledescription="carousel" aria-label="Tour types">
+      <div class="floor"></div>
+      <div class="ring" id="ring"></div>
+    </div>
+    <div class="ringbar">
+      <div class="ringinfo" aria-live="polite"><h3 id="ringTitle">Student tours</h3><p id="ringBody"></p></div>
+      <div class="ringctl">
+        <button class="roundbtn" id="prev" aria-label="Previous tour type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <button class="roundbtn" id="next" aria-label="Next tour type"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== WHY (3D stack) ========== -->
+<section id="why" class="dark sec" style="padding-top:40px">
+  <div class="wrap why">
+    <div class="stackwrap" id="stackwrap" aria-hidden="true">
+      <div class="stack" id="stack">
+        <figure class="f1"><img src="img/toytrain.webp" alt=""></figure>
+        <figure class="f2"><img src="img/madurai.webp" alt=""></figure>
+        <figure class="f3"><img src="img/thekkady.webp" alt=""></figure>
+        <div class="badge"><b>2 yrs</b><span>running groups from Tiruppur</span></div>
+      </div>
+    </div>
+    <div style="flex:1 1 460px">
+      <p class="eyebrow reveal" style="color:var(--accent);margin-bottom:22px">Why Maverick</p>
+      <p class="quote reveal">"More than a trip — every itinerary planned to inspire, connect, and reveal India in ways a guidebook never will."</p>
+      <ol class="reasons" id="reasons"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- ========== HOW ========== -->
+<section id="how" class="light sec">
+  <div class="wrap">
+    <div class="sec-head reveal"><div class="t"><p class="eyebrow">How it works</p><h2>From enquiry to drop-off, in three steps.</h2></div></div>
+    <div class="steps">
+      <div class="step reveal"><span class="num">01</span><h3>Tell us the basics</h3><p>Dates, budget, group size and the kind of trip — by form, call or WhatsApp.</p></div>
+      <div class="step reveal"><span class="num">02</span><h3>Get a free itinerary</h3><p>A day-by-day plan with an itemised quote. We'll match any comparable written offer.</p></div>
+      <div class="step darkstep reveal"><span class="num">03</span><h3>Travel — we handle the rest</h3><p>Verified drivers, tracked vehicles, inspected hotels and a coordinator on the road with you.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== POLICIES & FAQ ========== -->
+<section id="policies" class="light sec" style="padding-top:40px">
+  <div class="wrap" style="display:flex;flex-direction:column">
+    <div class="sec-head reveal">
+      <div class="t"><p class="eyebrow">Policies &amp; FAQ</p><h2>Clear terms, before you travel.</h2></div>
+      <p style="max-width:380px;color:var(--muted);line-height:1.6">Still unsure about something? Call +91 81108 49375 or WhatsApp us — a real person answers.</p>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Policies and FAQ">
+      <button class="tab" role="tab" id="tab-faq" aria-controls="panel-faq" aria-selected="true" data-tab="faq">FAQ</button>
+      <button class="tab" role="tab" id="tab-terms" aria-controls="panel-terms" aria-selected="false" tabindex="-1" data-tab="terms">Cancellation &amp; payments</button>
+      <button class="tab" role="tab" id="tab-privacy" aria-controls="panel-privacy" aria-selected="false" tabindex="-1" data-tab="privacy">Privacy policy</button>
+    </div>
+
+    <!-- FAQ -->
+    <div class="panel" role="tabpanel" id="panel-faq" aria-labelledby="tab-faq">
+      <div class="faq">
+        <details open>
+          <summary>Is my trip booked once I receive the itinerary?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">No. The itinerary is a proposal, and no bookings are made until you confirm it. Everything in it is subject to availability, so we recommend confirming early to avoid last-minute hassles. Your booking is confirmed with the 30% advance payment.</div>
+        </details>
+        <details>
+          <summary>How do payments work?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">In three parts:<ul><li><b>30% advance</b> when you sign the contract or confirm the booking.</li><li><b>50%</b> ten days before the departure date.</li><li><b>The final 20%</b> on day 1 of the tour, when you reach the resort.</li></ul></div>
+        </details>
+        <details>
+          <summary>What happens if I cancel?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">It depends on how close to departure you cancel:<ul><li><b>30 days or more before:</b> a 10% administrative deduction on the total trip cost.</li><li><b>15–29 days before:</b> a 30% retention fee.</li><li><b>0–14 days before:</b> a 100% retention fee, because of resort block-booking rules.</li></ul></div>
+        </details>
+        <details>
+          <summary>What is not included in the trip cost?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">Anything not mentioned in your itinerary — for example personal expenses, food beyond what's listed, early check-in or late checkout, and camera or video permits at sights. Some charges are paid directly at the destination, such as entry tickets, vehicle entry or green tax at hill stations and sanctuaries, and optional activities like boating, jeep safaris and paragliding. Your itinerary lists exactly what is included and excluded.</div>
+        </details>
+        <details>
+          <summary>What if the hotel in my itinerary isn't available?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">Hotels are subject to availability. If the one proposed is not available, we provide similar rooms.</div>
+        </details>
+        <details>
+          <summary>Can sightseeing days and timings change?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">Yes. The itinerary is a guideline for the tour, so the days and timings of sightseeing may change on the ground.</div>
+        </details>
+        <details>
+          <summary>Do you plan trips outside South India?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">Yes — Goa, Jaipur and Kullu Manali within India, the Andaman Islands, and international trips to Sri Lanka, Malaysia, Thailand and Singapore. Tell us your dates, budget and group size and we'll send an itinerary.</div>
+        </details>
+        <details>
+          <summary>How do you use my personal details?<span class="pm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></summary>
+          <div class="a">Only to plan and run your trip — we share them with the hotels, drivers, guides and permit authorities involved, and we never sell them. <a href="#policies" data-tab="privacy">Read the full privacy policy</a>.</div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Cancellation & payments -->
+    <div class="panel" role="tabpanel" id="panel-terms" aria-labelledby="tab-terms" hidden>
+      <div class="terms">
+        <div class="tcard wide">
+          <h3>Payment terms</h3>
+          <div class="payrow">
+            <div class="pay1"><b>30%</b><span>Advance — on contract signing or booking confirmation</span></div>
+            <div class="pay2"><b>50%</b><span>Intermediate — 10 days before the departure date</span></div>
+            <div class="pay3"><b>20%</b><span>Final balance — on day 1, on reaching the resort</span></div>
+          </div>
+        </div>
+        <div class="tcard">
+          <h3>Cancellation charges</h3>
+          <div class="tiers">
+            <div class="tier"><span>30+ days before departure</span><b>10%</b></div>
+            <div class="tier"><span>15–29 days before</span><b>30%</b></div>
+            <div class="tier t3"><span>0–14 days before</span><b>100%</b></div>
+          </div>
+          <p class="note">30+ days: administrative deduction on the total trip cost. 15–29 and 0–14 days: retention fee. The 0–14 day charge is due to resort block-booking rules.</p>
+        </div>
+        <div class="tcard">
+          <h3>Reservation policy</h3>
+          <ul>
+            <li>Hotels are subject to availability. If not available, similar rooms will be provided.</li>
+            <li>No bookings are made from the itinerary — it is a proposal, subject to availability of services.</li>
+            <li>The itinerary is a guideline for the tour, so the days and timings of sightseeing may change.</li>
+            <li>For any clarification, feel free to call us.</li>
+          </ul>
+        </div>
+        <div class="tcard">
+          <h3>Trip cost excludes</h3>
+          <ul>
+            <li>Anything not mentioned in the itinerary.</li>
+            <li>Personal expenses.</li>
+            <li>Early check-in and late checkout.</li>
+            <li>Permits for cameras and videos at sights.</li>
+            <li>Other food expenses.</li>
+          </ul>
+        </div>
+        <div class="tcard">
+          <h3>Paid at the destination</h3>
+          <ul>
+            <li>Entry tickets and camera fees.</li>
+            <li>Vehicle entry or green tax at hill stations and sanctuaries.</li>
+            <li>Optional activities such as boating, jeep safaris and paragliding.</li>
+          </ul>
+          <p class="note">Your itinerary tells you what is included and excluded.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Privacy -->
+    <div class="panel" role="tabpanel" id="panel-privacy" aria-labelledby="tab-privacy" hidden>
+      <article class="privacy">
+        <p>Maverick Expeditions ("we", "us") respects your privacy. This policy explains what information we collect when you use www.maverickexpeditions.in or book a tour with us.</p>
+        <div><h3>Information we collect</h3><p>Your name, phone number, email address, group size, travel dates and preferences, and, where needed for bookings, ID details of travellers (for example for hotels, permits and school or college tours).</p></div>
+        <div><h3>How we use it</h3><p>To prepare itineraries and quotes, confirm bookings with hotels, transport providers and attractions, send booking updates, and provide support before, during and after your trip.</p></div>
+        <div><h3>Sharing</h3><p>We share your details only with the service providers needed to run your trip (hotels, drivers, guides, permit authorities). We do not sell your personal information.</p></div>
+        <div><h3>Security</h3><p>We take reasonable steps to protect your information, but no online method of transmission is completely secure.</p></div>
+        <div><h3>Your choices</h3><p>You can ask us to correct or delete your information, or to stop sending you offers, by writing to maverickexpeditions@gmail.com.</p></div>
+        <div><h3>Payments at the destination</h3><p>Some charges are not part of the quotation and are paid directly by guests at the destination. Examples are entry tickets, camera fees, vehicle entry or green tax at hill stations and sanctuaries, and optional activities such as boating, jeep safaris and paragliding. Your itinerary will tell you what is included and excluded.</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ========== PLAN ========== -->
+<section id="plan" class="light" style="padding:0 0 120px">
+  <div class="wrap">
+    <div class="plan reveal">
+      <svg class="mtn" viewBox="0 0 520 300" aria-hidden="true"><path d="M0 300 L120 120 L170 180 L270 40 L360 170 L410 120 L520 300Z" fill="#0B1311"/></svg>
+      <div class="l">
+        <h2>Plan your trip.</h2>
+        <p style="font-size:18px;line-height:1.55;max-width:440px">Share a few details and we'll send a free, itemised itinerary.</p>
+        <div class="contact">
+          <a class="btn btn-dark" style="align-self:flex-start" href="https://wa.me/918110849375">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
+            Chat on WhatsApp</a>
+          <span>+91 81108 49375 · +91 73395 76886</span>
+          <span>maverickexpeditions@gmail.com</span>
+          <span style="font-weight:500">Arulpuram, Tiruppur, Tamil Nadu 641605</span>
+        </div>
+      </div>
+      <form id="enquiry" aria-label="Enquiry form" novalidate>
+        <label class="lf">Your name *<input id="eName" type="text" placeholder="Full name" autocomplete="name" required>
+          <small class="err" id="eNameErr"></small></label>
+        <label class="lf">Phone / WhatsApp *<input id="ePhone" type="tel" placeholder="98765 43210" autocomplete="tel" inputmode="tel" required>
+          <small class="err" id="ePhoneErr"></small></label>
+        <label class="lf">Destination<select id="eDest">
+          <option>Not decided — suggest one</option>
+          <optgroup label="India"><option>Ooty</option><option>Munnar</option><option>Alleppey</option><option>Mysore</option><option>Coorg</option><option>Kodaikanal</option><option>Goa</option><option>Jaipur</option><option>Kullu Manali</option><option>Andaman Islands</option></optgroup>
+          <optgroup label="International"><option>Sri Lanka</option><option>Malaysia</option><option>Thailand</option><option>Singapore</option></optgroup>
+        </select></label>
+        <label class="lf">Trip type<select id="eType"><option>Family</option><option>Students</option><option>Corporate</option><option>Honeymoon</option><option>Pilgrimage</option><option>Industrial visit</option><option>Weekend trip</option><option>Custom</option></select></label>
+        <label class="lf">Travel date<input id="eDate" type="date"></label>
+        <label class="lf">Travellers<input id="eCount" type="number" min="1" placeholder="e.g. 4"></label>
+        <label class="lf full"><span>Anything else? <span style="font-weight:500">(days, budget, hotel type…)</span></span><textarea id="eMsg" rows="3" placeholder="e.g. 4 days, ₹15,000 per person, 3-star hotels"></textarea></label>
+        <button class="btn btn-dark full" id="eSend" type="submit" style="height:58px;border-radius:14px;font-size:16px;gap:12px">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:22px;height:22px"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
+          Send enquiry on WhatsApp</button>
+        <p class="full note" style="margin:0;text-align:center">Opens WhatsApp with your details filled in — just tap <b>Send</b>.</p>
+        <div class="done" id="done" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="ftop">
+      <div class="fbrand">
+        <img src="img/logo.png" alt="Maverick Expeditions">
+        <p>New packages and seasonal offers, once a month.</p>
+        <form class="news" id="news"><label class="sr" for="nEmail">Email address</label><input id="nEmail" type="email" placeholder="you@email.com" required><button class="btn btn-accent" type="submit">Subscribe</button></form>
+        <p id="newsDone" role="status" style="font-size:14px"></p>
+      </div>
+      <div class="fcols">
+        <nav aria-label="Explore"><span>Explore</span><a href="#destinations">Destinations</a><a href="#tours">Experiences</a><a href="#why">About</a><a href="#how">How it works</a></nav>
+        <nav aria-label="Packages"><span>Packages</span><a href="#destinations">Islands &amp; international</a><a href="#tours">Student tours</a><a href="#tours">Family &amp; honeymoon</a><a href="#tours">Pilgrimage circuits</a><a href="#tours">Industrial visits</a><a href="#tours">Corporate offsites</a></nav>
+        <nav aria-label="Support"><span>Support</span><a href="#policies" data-tab="faq">FAQs</a><a href="#policies" data-tab="terms">Cancellation &amp; payments</a><a href="#policies" data-tab="privacy">Privacy policy</a><a href="#plan">Contact us</a></nav>
+      </div>
+    </div>
+    <p class="big" aria-hidden="true">Forge your own path</p>
+    <div class="fbot"><span>© 2026 Maverick Expeditions · Arulpuram, Tiruppur</span><span>Travel agency in Tiruppur for South India tours</span></div>
+  </div>
+</footer>
+
+<script src="js/lenis.min.js"></script>
+<script src="js/smooth.js"></script>
+<script type="module" src="js/ui.js"></script>
+<script type="module" src="js/hero.js"></script>
+</body>
+</html>
