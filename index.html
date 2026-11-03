@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; upgrade-insecure-requests; require-trusted-types-for 'script'; trusted-types 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maverick Expeditions — 3D Website</title>
 <meta name="description" content="Maverick Expeditions — travel agency in Tiruppur for South India tours. Student, family, corporate, honeymoon, pilgrimage and custom tours.">
@@ -202,6 +204,7 @@ p{margin:0}
 .lf input,.lf select,.lf textarea{height:52px;border-radius:14px;border:1px solid #D5DBD8;background:#F6F8F7;padding:0 14px;font:500 16px var(--body);color:var(--ink)}
 .lf textarea{height:auto;padding:14px;resize:vertical}
 .full{grid-column:1/-1}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
 .err{color:#A3341A;font-size:13px;font-weight:600;min-height:0}
 .lf input[aria-invalid="true"]{border-color:#A3341A;background:#FDF3F0}
 .wa-btn{display:inline-flex;align-items:center;gap:10px;margin-top:10px;min-height:50px;padding:0 22px;border-radius:999px;background:#1F8F4E;color:#fff !important;text-decoration:none;font-weight:700}
@@ -569,7 +572,7 @@ footer .wrap{padding-top:90px;padding-bottom:40px;display:flex;flex-direction:co
         <h2>Plan your trip.</h2>
         <p style="font-size:18px;line-height:1.55;max-width:440px">Share a few details and we'll send a free, itemised itinerary.</p>
         <div class="contact">
-          <a class="btn btn-dark" style="align-self:flex-start" href="https://wa.me/918110849375">
+          <a class="btn btn-dark" style="align-self:flex-start" href="https://wa.me/918110849375" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
             Chat on WhatsApp</a>
           <span>+91 81108 49375 · +91 73395 76886</span>
@@ -578,9 +581,9 @@ footer .wrap{padding-top:90px;padding-bottom:40px;display:flex;flex-direction:co
         </div>
       </div>
       <form id="enquiry" aria-label="Enquiry form" novalidate>
-        <label class="lf">Your name *<input id="eName" type="text" placeholder="Full name" autocomplete="name" required>
+        <label class="lf">Your name *<input id="eName" type="text" placeholder="Full name" autocomplete="name" maxlength="60" spellcheck="false" required>
           <small class="err" id="eNameErr"></small></label>
-        <label class="lf">Phone / WhatsApp *<input id="ePhone" type="tel" placeholder="98765 43210" autocomplete="tel" inputmode="tel" required>
+        <label class="lf">Phone / WhatsApp *<input id="ePhone" type="tel" placeholder="98765 43210" autocomplete="tel" inputmode="tel" maxlength="18" required>
           <small class="err" id="ePhoneErr"></small></label>
         <label class="lf">Destination<select id="eDest">
           <option>Not decided — suggest one</option>
@@ -588,9 +591,10 @@ footer .wrap{padding-top:90px;padding-bottom:40px;display:flex;flex-direction:co
           <optgroup label="International"><option>Sri Lanka</option><option>Malaysia</option><option>Thailand</option><option>Singapore</option></optgroup>
         </select></label>
         <label class="lf">Trip type<select id="eType"><option>Family</option><option>Students</option><option>Corporate</option><option>Honeymoon</option><option>Pilgrimage</option><option>Industrial visit</option><option>Weekend trip</option><option>Custom</option></select></label>
-        <label class="lf">Travel date<input id="eDate" type="date"></label>
-        <label class="lf">Travellers<input id="eCount" type="number" min="1" placeholder="e.g. 4"></label>
-        <label class="lf full"><span>Anything else? <span style="font-weight:500">(days, budget, hotel type…)</span></span><textarea id="eMsg" rows="3" placeholder="e.g. 4 days, ₹15,000 per person, 3-star hotels"></textarea></label>
+        <label class="lf">Travel date<input id="eDate" type="date"><small class="err" id="eDateErr"></small></label>
+        <label class="lf">Travellers<input id="eCount" type="number" min="1" max="500" step="1" inputmode="numeric" placeholder="e.g. 4"><small class="err" id="eCountErr"></small></label>
+        <label class="lf full"><span>Anything else? <span style="font-weight:500">(days, budget, hotel type…)</span></span><textarea id="eMsg" rows="3" maxlength="500" placeholder="e.g. 4 days, ₹15,000 per person, 3-star hotels"></textarea><small class="err" id="eMsgErr"></small></label>
+        <div class="hp" aria-hidden="true"><label>Website<input id="eWebsite" type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
         <button class="btn btn-dark full" id="eSend" type="submit" style="height:58px;border-radius:14px;font-size:16px;gap:12px">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:22px;height:22px"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20.5l1.6-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>
           Send enquiry on WhatsApp</button>
@@ -608,7 +612,7 @@ footer .wrap{padding-top:90px;padding-bottom:40px;display:flex;flex-direction:co
       <div class="fbrand">
         <img src="img/logo.png" alt="Maverick Expeditions">
         <p>New packages and seasonal offers, once a month.</p>
-        <form class="news" id="news"><label class="sr" for="nEmail">Email address</label><input id="nEmail" type="email" placeholder="you@email.com" required><button class="btn btn-accent" type="submit">Subscribe</button></form>
+        <form class="news" id="news" novalidate><label class="sr" for="nEmail">Email address</label><input id="nEmail" type="email" placeholder="you@email.com" maxlength="254" autocomplete="email" required><button class="btn btn-accent" type="submit">Subscribe</button></form>
         <p id="newsDone" role="status" style="font-size:14px"></p>
       </div>
       <div class="fcols">

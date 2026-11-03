@@ -1,34 +1,72 @@
-// Interface: cards, 3D ring, photo stack, reveals, forms. Independent of WebGL.
-const ICON_ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>';
+// Interface: cards, 3D ring, photo stack, reveals, forms.
+// SECURITY: this file never writes HTML strings into the page (no innerHTML / outerHTML /
+// insertAdjacentHTML / document.write). Every element is created with the DOM API and every
+// piece of text is set with textContent, so user input can never become markup or script.
+// The page's Content Security Policy enforces this with Trusted Types.
+'use strict';
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fine = matchMedia('(pointer: fine)').matches;
+const $ = (id) => document.getElementById(id);
+
+/* ---------- Safe element builders ---------- */
+function h(tag, attrs, ...children) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'style') el.style.cssText = v;
+    else if (k === 'text') el.textContent = v;
+    else el.setAttribute(k, String(v));
+  }
+  for (const c of children.flat()) if (c != null) el.append(c instanceof Node ? c : document.createTextNode(String(c)));
+  return el;
+}
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svg(paths, attrs) {
+  const s = document.createElementNS(SVGNS, 'svg');
+  const base = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': '2.4', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', ...attrs };
+  for (const [k, v] of Object.entries(base)) s.setAttribute(k, v);
+  for (const p of paths) {
+    const [tag, a] = p;
+    const n = document.createElementNS(SVGNS, tag);
+    for (const [k, v] of Object.entries(a)) n.setAttribute(k, v);
+    s.append(n);
+  }
+  return s;
+}
+const arrowIcon = () => svg([['path', { d: 'M7 17L17 7M8 7h9v9' }]]);
 
 /* ---------- Nav ---------- */
-const nav = document.getElementById('nav');
-const onScrollNav = () => nav.classList.toggle('solid', scrollY > innerHeight * 3.6 || scrollY > document.getElementById('fly').offsetHeight - innerHeight);
+const nav = $('nav');
+const onScrollNav = () => nav.classList.toggle('solid', scrollY > $('fly').offsetHeight - innerHeight);
 addEventListener('scroll', onScrollNav, { passive: true }); onScrollNav();
 
-/* ---------- Trip chips ---------- */
-const chips = document.getElementById('chips');
+/* ---------- Allowed values (whitelists) ---------- */
+const DESTS_INDIA = ['Ooty', 'Munnar', 'Alleppey', 'Mysore', 'Coorg', 'Kodaikanal', 'Goa', 'Jaipur', 'Kullu Manali', 'Andaman Islands'];
+const DESTS_INTL = ['Sri Lanka', 'Malaysia', 'Thailand', 'Singapore'];
+const DEST_ALLOWED = new Set(['Not decided — suggest one', ...DESTS_INDIA, ...DESTS_INTL]);
+const TYPE_ALLOWED = new Set(['Family', 'Students', 'Corporate', 'Honeymoon', 'Pilgrimage', 'Industrial visit', 'Weekend trip', 'Custom']);
+
+/* ---------- Trip chips + finder ---------- */
+const chips = $('chips');
 ['Family', 'Students', 'Corporate', 'Honeymoon', 'Pilgrimage', 'Weekend'].forEach((t, i) => {
-  const b = document.createElement('button');
-  b.type = 'button'; b.className = 'chip'; b.textContent = t; b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+  const b = h('button', { type: 'button', class: 'chip', 'aria-pressed': i === 0 ? 'true' : 'false', text: t });
   b.addEventListener('click', () => { chips.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); });
-  chips.appendChild(b);
+  chips.append(b);
 });
-document.getElementById('finder').addEventListener('submit', (e) => {
+$('finder').addEventListener('submit', (e) => {
   e.preventDefault();
   const type = chips.querySelector('[aria-pressed="true"]').textContent;
-  document.getElementById('eType').value = type === 'Weekend' ? 'Weekend trip' : type;
-  const dest = document.getElementById('fDest').value, when = document.getElementById('fWhen').value, size = document.getElementById('fSize').value;
-  const sel = document.getElementById('eDest');
-  if ([...sel.options].some(o => o.text === dest)) sel.value = dest;
-  if (when) document.getElementById('eDate').value = when + '-01';
-  const n = parseInt(size, 10); if (n) document.getElementById('eCount').value = n;
-  document.getElementById('eMsg').value = 'Group size: ' + size + (when ? ', any dates in that month' : '');
-  const planEl = document.getElementById('plan');
+  const t = type === 'Weekend' ? 'Weekend trip' : type;
+  if (TYPE_ALLOWED.has(t)) $('eType').value = t;
+  const dest = $('fDest').value, when = $('fWhen').value, size = $('fSize').value;
+  if (DEST_ALLOWED.has(dest)) $('eDest').value = dest;
+  if (/^\d{4}-\d{2}$/.test(when)) $('eDate').value = when + '-01';
+  const n = parseInt(size, 10); if (n > 0 && n <= 500) $('eCount').value = n;
+  $('eMsg').value = ('Group size: ' + size + (when ? ', any dates in that month' : '')).slice(0, 500);
+  const planEl = $('plan');
   if (window.lenis) window.lenis.scrollTo(planEl, { offset: -84, duration: 1.6 }); else planEl.scrollIntoView();
-  setTimeout(() => document.getElementById('eName').focus({ preventScroll: true }), 1700);
+  setTimeout(() => $('eName').focus({ preventScroll: true }), 1700);
 });
 
 /* ---------- Destination tilt cards ---------- */
@@ -41,15 +79,6 @@ const dests = [
   ['Jaipur', 'Rajasthan', 'Forts & palaces', 'jaipur'],
   ['Kullu Manali', 'Himachal', 'Mountains', 'manali'],
 ];
-const dgrid = document.getElementById('dgrid');
-const makeCard = ([n, r, tag, img], i) => {
-  const a = document.createElement('a');
-  a.href = '#plan'; a.className = 'tilt reveal'; a.style.transitionDelay = (i % 5) * 80 + 'ms';
-  a.dataset.dest = n;
-  a.innerHTML = `<div class="card"><div class="ph"><img src="img/${img}.webp" alt="${n}, ${r}" loading="lazy"></div><div class="glare"></div><span class="tag">${tag}</span><div class="meta"><div><h3>${n}</h3><p>${r}</p></div><span class="go">${ICON_ARROW}</span></div></div>`;
-  return a;
-};
-dests.forEach((d, i) => dgrid.appendChild(makeCard(d, i)));
 const abroad = [
   ['Andaman Islands', 'Havelock & Neil, India', 'Islands', 'andaman'],
   ['Sri Lanka', 'Nine Arch Bridge, Ella', 'International', 'srilanka'],
@@ -57,20 +86,31 @@ const abroad = [
   ['Thailand', 'Phi Phi Islands, Krabi', 'International', 'thailand'],
   ['Singapore', 'Marina Bay', 'International', 'singapore'],
 ];
-const igrid = document.getElementById('igrid');
-abroad.forEach((d, i) => igrid.appendChild(makeCard(d, i)));
-// clicking a destination card pre-fills the enquiry
+const makeCard = ([n, r, tag, img], i) => {
+  const a = h('a', { href: '#plan', class: 'tilt reveal', 'data-dest': n, style: `transition-delay:${(i % 5) * 80}ms` },
+    h('div', { class: 'card' },
+      h('div', { class: 'ph' }, h('img', { src: `img/${img}.webp`, alt: `${n}, ${r}`, loading: 'lazy' })),
+      h('div', { class: 'glare' }),
+      h('span', { class: 'tag', text: tag }),
+      h('div', { class: 'meta' },
+        h('div', null, h('h3', { text: n }), h('p', { text: r })),
+        h('span', { class: 'go' }, arrowIcon()))));
+  return a;
+};
+const dgrid = $('dgrid'), igrid = $('igrid');
+dests.forEach((d, i) => dgrid.append(makeCard(d, i)));
+abroad.forEach((d, i) => igrid.append(makeCard(d, i)));
+dgrid.append(h('a', { href: '#plan', class: 'tilt cta reveal' },
+  h('div', { class: 'card' },
+    svg([['circle', { cx: '12', cy: '12', r: '9' }], ['path', { d: 'M15.5 8.5l-2 5-5 2 2-5z' }]], { class: 'compass', 'stroke-width': '1.6' }),
+    h('div', { class: 'inner' },
+      h('h3', { text: 'Somewhere else in mind?' }),
+      h('p', { text: 'Kodaikanal, Coorg, Kanyakumari, Mahabalipuram, Thekkady — tell us your dates, budget and group size.' }),
+      h('b', { style: 'text-decoration:underline;text-underline-offset:4px', text: 'Design a custom tour' })))));
 document.addEventListener('click', (e) => {
-  const card = e.target.closest('.tilt[data-dest]');
-  if (!card) return;
-  const sel = document.getElementById('eDest');
-  const name = card.dataset.dest === 'Kullu Manali' ? 'Kullu Manali' : card.dataset.dest;
-  if (sel && [...sel.options].some(o => o.text === name)) sel.value = name;
+  const card = e.target.closest && e.target.closest('.tilt[data-dest]');
+  if (card && DEST_ALLOWED.has(card.dataset.dest)) $('eDest').value = card.dataset.dest;
 });
-const cta = document.createElement('a');
-cta.href = '#plan'; cta.className = 'tilt cta reveal';
-cta.innerHTML = `<div class="card"><svg class="compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg><div class="inner"><h3>Somewhere else in mind?</h3><p>Kodaikanal, Coorg, Kanyakumari, Mahabalipuram, Thekkady — tell us your dates, budget and group size.</p><b style="text-decoration:underline;text-underline-offset:4px">Design a custom tour</b></div></div>`;
-dgrid.appendChild(cta);
 
 if (fine && !reduce) {
   document.querySelectorAll('.tilt').forEach(el => {
@@ -83,10 +123,7 @@ if (fine && !reduce) {
       if (img) img.style.transform = `scale(1.16) translate(${(.5 - px) * 14}px, ${(.5 - py) * 14}px)`;
       if (glare) glare.style.background = `radial-gradient(circle at ${px * 100}% ${py * 100}%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%)`;
     });
-    el.addEventListener('pointerleave', () => {
-      card.style.transition = ''; card.style.transform = '';
-      if (img) img.style.transform = '';
-    });
+    el.addEventListener('pointerleave', () => { card.style.transition = ''; card.style.transform = ''; if (img) img.style.transform = ''; });
   });
 }
 
@@ -101,33 +138,30 @@ const tours = [
   ['07', 'Weekend trips', 'Leave Friday night from Tiruppur or Coimbatore, back by Sunday.', 'ooty'],
   ['08', 'Custom tours', 'Built around your dates, budget and group size.', 'munnar'],
 ];
-const ring = document.getElementById('ring'), stage = document.getElementById('ringstage');
+const ring = $('ring'), stage = $('ringstage');
 const N = tours.length, STEP = 360 / N;
 const slots = tours.map(([num, t, , img]) => {
-  const s = document.createElement('div');
-  s.className = 'slot';
-  s.innerHTML = `<img src="img/${img}.webp" alt="" loading="lazy" draggable="false"><div class="lbl"><small>${num}</small><b>${t}</b></div>`;
-  ring.appendChild(s); return s;
+  const s = h('div', { class: 'slot' },
+    h('img', { src: `img/${img}.webp`, alt: '', loading: 'lazy', draggable: 'false' }),
+    h('div', { class: 'lbl' }, h('small', { text: num }), h('b', { text: t })));
+  ring.append(s); return s;
 });
 let radius = 0;
 const layoutRing = () => {
-  const w = ring.offsetWidth;
-  radius = Math.round((w / 2) / Math.tan(Math.PI / N) + (innerWidth < 700 ? 30 : 70));
+  radius = Math.round((ring.offsetWidth / 2) / Math.tan(Math.PI / N) + (innerWidth < 700 ? 30 : 70));
   slots.forEach((s, i) => s.style.transform = `rotateY(${i * STEP}deg) translateZ(${radius}px)`);
 };
 layoutRing(); addEventListener('resize', layoutRing);
-
 let angle = 0, target = 0, drag = null, lastActive = -1, auto = true;
-const rTitle = document.getElementById('ringTitle'), rBody = document.getElementById('ringBody');
+const rTitle = $('ringTitle'), rBody = $('ringBody');
 const setActive = (i) => { if (i === lastActive) return; lastActive = i; rTitle.textContent = tours[i][1]; rBody.textContent = tours[i][2]; };
 const snap = () => { target = Math.round(target / STEP) * STEP; };
-document.getElementById('prev').addEventListener('click', () => { auto = false; target = Math.round(target / STEP) * STEP + STEP; });
-document.getElementById('next').addEventListener('click', () => { auto = false; target = Math.round(target / STEP) * STEP - STEP; });
+$('prev').addEventListener('click', () => { auto = false; target = Math.round(target / STEP) * STEP + STEP; });
+$('next').addEventListener('click', () => { auto = false; target = Math.round(target / STEP) * STEP - STEP; });
 stage.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, t: target }; auto = false; stage.setPointerCapture(e.pointerId); });
 stage.addEventListener('pointermove', (e) => { if (drag) target = drag.t + (e.clientX - drag.x) * 0.35; });
 const endDrag = () => { if (drag) { drag = null; snap(); } };
 stage.addEventListener('pointerup', endDrag); stage.addEventListener('pointercancel', endDrag);
-
 let ringVisible = false;
 new IntersectionObserver(([e]) => { ringVisible = e.isIntersecting; }, { threshold: 0 }).observe(stage);
 let autoTimer = 0;
@@ -138,104 +172,202 @@ function ringTick(t) {
     ring.style.transform = `translateZ(${-radius}px) rotateX(-6deg) rotateY(${angle}deg)`;
     slots.forEach((s, i) => {
       let a = ((i * STEP + angle) % 360 + 360) % 360; if (a > 180) a -= 360;
-      const f = Math.cos(a * Math.PI / 180);
-      s.style.opacity = (0.25 + 0.75 * Math.max(0, f)).toFixed(3);
-      s.style.filter = `brightness(${(0.45 + 0.55 * Math.max(0, f)).toFixed(3)})`;
+      const f = Math.max(0, Math.cos(a * Math.PI / 180));
+      s.style.opacity = (0.25 + 0.75 * f).toFixed(3);
+      s.style.filter = `brightness(${(0.45 + 0.55 * f).toFixed(3)})`;
     });
-    const idx = ((Math.round(-angle / STEP) % N) + N) % N;
-    setActive(idx);
+    setActive(((Math.round(-angle / STEP) % N) + N) % N);
   }
   requestAnimationFrame(ringTick);
 }
 requestAnimationFrame(ringTick);
 
 /* ---------- Reasons ---------- */
-const reasons = [
+[
   ['Safe & reliable', 'Verified drivers, tracked vehicles and a coordinator with every group.'],
   ['Best price guarantee', 'Itemised quotes with no hidden extras. We match comparable written offers.'],
   ['Expert local guides', 'Guides who know the sites — and the best time to arrive.'],
   ['Comfortable stays', 'Hotels we have inspected, early room blocks and group-friendly food.'],
   ['24×7 support', 'One number that reaches a real person, from enquiry to drop-off.'],
-];
-const ol = document.getElementById('reasons');
-reasons.forEach(([t, b], i) => {
-  const li = document.createElement('li'); li.className = 'reveal'; li.style.transitionDelay = i * 70 + 'ms';
-  li.innerHTML = `<span class="n">0${i + 1}</span><div><h3>${t}</h3><p>${b}</p></div>`;
-  ol.appendChild(li);
+].forEach(([t, b], i) => {
+  $('reasons').append(h('li', { class: 'reveal', style: `transition-delay:${i * 70}ms` },
+    h('span', { class: 'n', text: '0' + (i + 1) }), h('div', null, h('h3', { text: t }), h('p', { text: b }))));
 });
 
 /* ---------- Floating photo stack ---------- */
-const stack = document.getElementById('stack'), sw = document.getElementById('stackwrap');
+const stack = $('stack'), sw = $('stackwrap');
 let mx = 0, my = 0;
 if (fine && !reduce) sw.addEventListener('pointermove', (e) => { const r = sw.getBoundingClientRect(); mx = (e.clientX - r.left) / r.width - .5; my = (e.clientY - r.top) / r.height - .5; });
 sw.addEventListener('pointerleave', () => { mx = 0; my = 0; });
-function stackTick() {
+(function stackTick() {
   const r = sw.getBoundingClientRect();
   if (r.bottom > 0 && r.top < innerHeight && !reduce) {
-    const p = (r.top + r.height / 2) / innerHeight - .5; // -0.5..0.5
+    const p = (r.top + r.height / 2) / innerHeight - .5;
     stack.style.transform = `rotateX(${(p * 18 - my * 10).toFixed(2)}deg) rotateY(${(-14 + mx * 18).toFixed(2)}deg)`;
   }
   requestAnimationFrame(stackTick);
-}
-requestAnimationFrame(stackTick);
+})();
 
 /* ---------- Reveal on scroll ---------- */
 const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-/* ---------- Forms ---------- */
+/* =====================================================================
+   FORM SECURITY: validation, sanitising, anti-spam
+   ===================================================================== */
+const LIMITS = { name: 60, phone: 18, msg: 500, email: 254 };
+// Remove invisible/control characters (incl. bidi overrides used to disguise text), normalise Unicode.
+function clean(str, keepNewlines) {
+  let s = String(str || '').normalize('NFKC');
+  s = s.replace(/[​-‏‪-‮⁦-⁩﻿]/g, '');
+  s = keepNewlines ? s.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '') : s.replace(/[\u0000-\u001F\u007F]/g, ' ');
+  s = keepNewlines ? s.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n') : s.replace(/\s+/g, ' ');
+  return s.trim();
+}
+const HAS_MARKUP = /[<>]|&#|&[a-z]+;|javascript:|data:|vbscript:|\bon\w+\s*=|\{\{|\$\{|<\/?script/i;
+const HAS_LINK = /(https?:\/\/|www\.|\b[a-z0-9-]+\.(com|net|org|in|io|xyz|ru|cn|top|info|biz|link|click|app|me)\b|bit\.ly|t\.me\/|wa\.me\/)/i;
+const NAME_OK = /^[\p{L}\p{M}][\p{L}\p{M} .'’-]{1,59}$/u;
+const EMAIL_OK = /^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,185}\.[A-Za-z]{2,24}$/;
+
+function validPhone(raw) {
+  if (!/^\+?[\d\s()-]{10,18}$/.test(raw)) return false;
+  const d = raw.replace(/\D/g, '');
+  if (d.length === 10) return /^[6-9]/.test(d);                 // Indian mobile
+  if (d.length === 11 && d[0] === '0') return /^0[6-9]/.test(d);
+  if (d.length === 12 && d.startsWith('91')) return /^91[6-9]/.test(d);
+  return raw.trim().startsWith('+') && d.length >= 10 && d.length <= 13; // international with country code
+}
+// Simple client-side rate limit: 30 s between sends, max 3 per 10 minutes (per browser session).
+const RL_KEY = 'mvx_enq_times';
+function rateLimited() {
+  let times = [];
+  try { times = JSON.parse(sessionStorage.getItem(RL_KEY) || '[]').filter(t => typeof t === 'number'); } catch (_) {}
+  const now = Date.now();
+  times = times.filter(t => now - t < 10 * 60 * 1000);
+  if (times.length && now - times[times.length - 1] < 30 * 1000) return 'Please wait a few seconds before sending again.';
+  if (times.length >= 3) return 'You have sent several enquiries already. Please call us on +91 81108 49375.';
+  times.push(now);
+  try { sessionStorage.setItem(RL_KEY, JSON.stringify(times)); } catch (_) {}
+  return '';
+}
+const pageLoaded = Date.now();
+
 const WA_NUMBER = '918110849375';
-const form = document.getElementById('enquiry');
-const $ = (id) => document.getElementById(id);
+const form = $('enquiry');
 function setErr(input, errEl, msg) {
   input.setAttribute('aria-invalid', msg ? 'true' : 'false');
   errEl.textContent = msg || '';
 }
+function showDone(parts) {
+  const done = $('done');
+  done.replaceChildren(...parts);
+  done.classList.add('show');
+}
+
 form.addEventListener('submit', (e) => {
   e.preventDefault();
-  const v = (id) => $(id).value.trim();
-  const name = v('eName'), phone = v('ePhone');
-  const digits = phone.replace(/\D/g, '');
-  let ok = true;
-  if (name.length < 2) { setErr($('eName'), $('eNameErr'), 'Please enter your name.'); ok = false; } else setErr($('eName'), $('eNameErr'));
-  if (digits.length < 10 || digits.length > 13) { setErr($('ePhone'), $('ePhoneErr'), 'Please enter a valid phone number.'); ok = false; } else setErr($('ePhone'), $('ePhoneErr'));
-  if (!ok) { (name.length < 2 ? $('eName') : $('ePhone')).focus(); return; }
+  const name = clean($('eName').value), phone = clean($('ePhone').value), msg = clean($('eMsg').value, true);
+  const dest = $('eDest').value, type = $('eType').value, dateRaw = $('eDate').value, countRaw = $('eCount').value.trim();
+  const errs = [];
 
-  const date = v('eDate') ? new Date(v('eDate') + 'T00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Flexible';
+  // Honeypot (hidden field humans never see) and too-fast submits = bot. Pretend success, send nothing.
+  if ($('eWebsite').value || Date.now() - pageLoaded < 3000) {
+    showDone([h('b', { text: 'Thank you!' }), ' We will be in touch shortly.']);
+    form.reset(); return;
+  }
+
+  if (!name || name.length < 2) { setErr($('eName'), $('eNameErr'), 'Please enter your name.'); errs.push($('eName')); }
+  else if (HAS_MARKUP.test(name) || HAS_LINK.test(name) || !NAME_OK.test(name)) { setErr($('eName'), $('eNameErr'), 'Please use letters only (spaces, dots and hyphens are fine).'); errs.push($('eName')); }
+  else setErr($('eName'), $('eNameErr'));
+
+  if (!validPhone(phone)) { setErr($('ePhone'), $('ePhoneErr'), 'Please enter a valid mobile number, e.g. 98765 43210 or +65 9123 4567.'); errs.push($('ePhone')); }
+  else setErr($('ePhone'), $('ePhoneErr'));
+
+  if (msg.length > LIMITS.msg) { setErr($('eMsg'), $('eMsgErr'), `Please keep this under ${LIMITS.msg} characters.`); errs.push($('eMsg')); }
+  else if (HAS_MARKUP.test(msg)) { setErr($('eMsg'), $('eMsgErr'), 'Please remove code or special symbols like < and >.'); errs.push($('eMsg')); }
+  else if (HAS_LINK.test(msg)) { setErr($('eMsg'), $('eMsgErr'), 'Please don’t include website links — just describe your trip.'); errs.push($('eMsg')); }
+  else setErr($('eMsg'), $('eMsgErr'));
+
+  let count = '';
+  if (countRaw) {
+    const n = Number(countRaw);
+    if (!Number.isInteger(n) || n < 1 || n > 500) { setErr($('eCount'), $('eCountErr'), 'Enter a number from 1 to 500.'); errs.push($('eCount')); }
+    else { count = String(n); setErr($('eCount'), $('eCountErr')); }
+  } else setErr($('eCount'), $('eCountErr'));
+
+  let dateTxt = 'Flexible';
+  if (dateRaw) {
+    const ok = /^\d{4}-\d{2}-\d{2}$/.test(dateRaw);
+    const d = ok ? new Date(dateRaw + 'T00:00') : null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const max = new Date(today); max.setFullYear(max.getFullYear() + 2);
+    if (!d || isNaN(d) || d < today || d > max) { setErr($('eDate'), $('eDateErr'), 'Choose a date between today and two years from now.'); errs.push($('eDate')); }
+    else { dateTxt = d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); setErr($('eDate'), $('eDateErr')); }
+  } else setErr($('eDate'), $('eDateErr'));
+
+  // Dropdowns must be one of our own options (blocks tampered values)
+  const safeDest = DEST_ALLOWED.has(dest) ? dest : 'Not decided — suggest one';
+  const safeType = TYPE_ALLOWED.has(type) ? type : 'Custom';
+
+  if (errs.length) { errs[0].focus(); return; }
+  const limited = rateLimited();
+  if (limited) { showDone([limited]); return; }
+
+  // Strip WhatsApp formatting characters from user text so it can't restyle the message
+  const wa = (s) => s.replace(/[*_~`]/g, '');
   const lines = [
-    '*New trip enquiry — Maverick Expeditions website*',
-    '',
-    `*Name:* ${name}`,
-    `*Phone:* ${phone}`,
-    `*Destination:* ${v('eDest')}`,
-    `*Trip type:* ${v('eType')}`,
-    `*Travel date:* ${date}`,
-    `*Travellers:* ${v('eCount') || 'Not specified'}`,
+    '*New trip enquiry — Maverick Expeditions website*', '',
+    `*Name:* ${wa(name)}`,
+    `*Phone:* ${wa(phone)}`,
+    `*Destination:* ${safeDest}`,
+    `*Trip type:* ${safeType}`,
+    `*Travel date:* ${dateTxt}`,
+    `*Travellers:* ${count || 'Not specified'}`,
   ];
-  if (v('eMsg')) lines.push(`*Details:* ${v('eMsg')}`);
+  if (msg) lines.push(`*Details:* ${wa(msg)}`);
   lines.push('', 'Please send me a free itinerary and quote.');
-  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+  const url = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(lines.join('\n'));
 
-  // Open WhatsApp straight away (app on phones, WhatsApp Web on computers)
   let opened = null;
   try { opened = window.open(url, '_blank'); if (opened) opened.opener = null; } catch (_) {}
-  const done = $('done');
-  done.innerHTML = `<b>Thanks, ${name.split(' ')[0]}!</b> ${opened ? 'WhatsApp has opened with your enquiry — tap <b>Send</b> to reach us.' : 'Tap the button to open WhatsApp with your enquiry, then tap <b>Send</b>.'}<br><a class="wa-btn" href="${url}" target="_blank" rel="noopener">Open WhatsApp</a><br><span style="font-size:13px">Or call +91 81108 49375 · +91 73395 76886</span>`;
-  done.classList.add('show');
+  const first = name.split(' ')[0];
+  showDone([
+    h('b', { text: `Thanks, ${first}!` }), ' ',
+    opened ? 'WhatsApp has opened with your enquiry — tap ' : 'Tap the button to open WhatsApp with your enquiry, then tap ',
+    h('b', { text: 'Send' }), opened ? ' to reach us.' : '.',
+    h('br'),
+    h('a', { class: 'wa-btn', href: url, target: '_blank', rel: 'noopener noreferrer', text: 'Open WhatsApp' }),
+    h('br'),
+    h('span', { style: 'font-size:13px', text: 'Or call +91 81108 49375 · +91 73395 76886' }),
+  ]);
 });
-document.getElementById('news').addEventListener('submit', (e) => {
+
+// Live length/character guard while typing
+[['eName', LIMITS.name], ['ePhone', LIMITS.phone], ['eMsg', LIMITS.msg]].forEach(([id, max]) => {
+  $(id).addEventListener('input', (ev) => { if (ev.target.value.length > max) ev.target.value = ev.target.value.slice(0, max); });
+});
+$('ePhone').addEventListener('input', (ev) => { ev.target.value = ev.target.value.replace(/[^\d+\s()-]/g, ''); });
+
+$('news').addEventListener('submit', (e) => {
   e.preventDefault();
-  document.getElementById('newsDone').textContent = 'Thanks — the live site will add you to the monthly offers list.';
+  const email = clean($('nEmail').value);
+  const out = $('newsDone');
+  if (!EMAIL_OK.test(email) || email.length > LIMITS.email || HAS_MARKUP.test(email)) { out.textContent = 'Please enter a valid email address.'; $('nEmail').setAttribute('aria-invalid', 'true'); return; }
+  $('nEmail').setAttribute('aria-invalid', 'false');
+  out.textContent = 'Thanks — the live site will add you to the monthly offers list.';
+  e.target.reset();
 });
 
 /* ---------- Policies & FAQ tabs ---------- */
 const tabs = [...document.querySelectorAll('.tab[role="tab"]')];
+const TAB_NAMES = new Set(['faq', 'terms', 'privacy']);
 function selectTab(name, focus) {
+  if (!TAB_NAMES.has(name)) return;
   tabs.forEach(t => {
     const on = t.dataset.tab === name;
     t.setAttribute('aria-selected', on ? 'true' : 'false');
     t.tabIndex = on ? 0 : -1;
-    document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    $(t.getAttribute('aria-controls')).hidden = !on;
     if (on && focus) t.focus();
   });
 }
@@ -247,8 +379,14 @@ tabs.forEach((t, i) => {
     selectTab(n.dataset.tab, true);
   });
 });
-// links elsewhere (footer, FAQ) that open a specific tab
 document.querySelectorAll('a[data-tab]').forEach(a => a.addEventListener('click', () => selectTab(a.dataset.tab)));
-// deep links: #privacy, #cancellation, #faq
-const hashTab = { '#privacy': 'privacy', '#cancellation': 'terms', '#faq': 'faq' }[location.hash];
-if (hashTab) { selectTab(hashTab); setTimeout(() => document.getElementById('policies').scrollIntoView(), 300); }
+// Deep links (#privacy, #cancellation, #faq) — only exact whitelisted values are honoured.
+const HASH_TABS = new Map([['#privacy', 'privacy'], ['#cancellation', 'terms'], ['#faq', 'faq']]);
+if (HASH_TABS.has(location.hash)) { selectTab(HASH_TABS.get(location.hash)); setTimeout(() => $('policies').scrollIntoView(), 300); }
+
+// Date picker: only allow today … +2 years
+(() => {
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const t = new Date(); const m = new Date(); m.setFullYear(m.getFullYear() + 2);
+  $('eDate').min = iso(t); $('eDate').max = iso(m);
+})();
